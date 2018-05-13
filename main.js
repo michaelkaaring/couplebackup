@@ -1,4 +1,5 @@
 const electron = require('electron')
+const {powerSaveBlocker} = require('electron')
 // Module to control application life.
 const app = electron.app
 // Module to create native browser window.
@@ -28,11 +29,15 @@ function createWindow () {
   // Open the DevTools.
   //mainWindow.webContents.openDevTools()
 
+  // Prevent app from going to sleep while downloading all files
+  const powersaveId = powerSaveBlocker.start('prevent-app-suspension')
+
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
+    powerSaveBlocker.stop(powersaveId)
     mainWindow = null
   })
 }
