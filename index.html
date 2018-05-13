@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <title>Couple backup</title>
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/moment.js"></script>
+    <script type="text/javascript" src="js/underscore.js"></script>
+    <script type="text/javascript" src="js/popper.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script>if (window.module) module = window.module;</script>
+    <style>
+      #downloading, #folders, #progressBar, #finishScreen {
+        display: none;
+      }
+
+      .buttons {
+        clear: both;
+        margin: 40px 0;
+        display: none;
+      }
+      .lds-ring {
+        display: inline-block;
+        position: relative;
+        width: 64px;
+        height: 64px;
+
+        float:left;
+        margin-right: 20px;
+      }
+      .lds-ring div {
+        box-sizing: border-box;
+        display: block;
+        position: absolute;
+        width: 51px;
+        height: 51px;
+        margin: 6px;
+        border: 6px solid #fff;
+        border-radius: 50%;
+        animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        border-color: #fff transparent transparent transparent;
+      }
+      .lds-ring div:nth-child(1) {
+        animation-delay: -0.45s;
+      }
+      .lds-ring div:nth-child(2) {
+        animation-delay: -0.3s;
+      }
+      .lds-ring div:nth-child(3) {
+        animation-delay: -0.15s;
+      }
+      @keyframes lds-ring {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .downloading {
+        text-align: center;
+      }
+
+      #createdBy {
+        display: inline-block;
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        font-size: 12px;
+      }
+
+      #createdBy p {
+        margin:0px;
+      }
+    </style>
+</head>
+<body>
+    <div class="container-fluid" id="userbar">
+        <div id="userContainer">
+          <img src="" /> <span>Name</span>
+        </div>
+        <div class="clr"></div>
+    </div>
+    <div class="container" id="main">
+
+
+        <div id="login">
+            <h2 id="title">Couple.me backup</h2>
+            <div class="form-group">
+              <label for="username">Email address</label>
+              <input type="email" class="form-control" id="username" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" class="form-control" id="password" placeholder="Password">
+            </div>
+            <button class="btn btn-primary" onClick="loginToCouple();">Login</button>
+        </div>
+        <div id="folders">
+          <h3 id="title">Select location</h3>
+          <p>First, we need to select a location where we'll create a "Couple" directory. In there we'll save a copy of your timeline and all your moments</p>
+          <div class="form-group"><input type="file"
+         webkitdirectory /></div>
+         <button class="btn btn-primary" onClick="createDirectories();">Continue</button>
+        </div>
+        <div id="downloading">
+            <div id="loadingIndicator" class="lds-ring"><div></div><div></div><div></div><div></div></div>
+            <div id="downloadingText"></div>
+            <small id="downloadingTextSmall"></small>
+            <div class="progress" id="progressBar">
+              <div class="progress-bar" id="downloadProgress" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <div class="buttons">
+              <button class="btn btn-primary" id="downloadContinue" onClick="downloadContinue();"></button>
+              <button class="btn btn-secondary" id="finish" onClick="finishDownloads();">No thanks</button>
+            </div>
+        </div>
+        <div id="finishScreen">
+          <h3 id="title">All done!</h3>
+          <p>Hope you got all the data you wanted.</p>
+          <p>Have a nice day now :)</p>
+          <br /><br />
+          <p>PS: You can delete this app now. Your data is safely stored at the location you selected.</p>
+        </div>
+
+    </div>
+
+    <div id="createdBy">
+      <p><b>Created by: Michael Kåring</b></p>
+      <p>github.com/michaelkaaring<br>twitter.com/michaelkaaring</p>
+    </div>
+
+    <script>
+      // You can also require other files to run in this process
+      require('./renderer.js')
+      const auth = require('./auth.js');
+      const timeline = require('./timeline.js');
+      const helper = require('./helper.js');
+      const moments = require('./moments.js');
+      const secrets = require('./secrets.js');
+
+    </script>
+    <script type="text/javascript">
+      var authObject = (localStorage.authObject) ? JSON.parse(localStorage.authObject) : {};
+      var userObject = (localStorage.userObject) ? JSON.parse(localStorage.userObject) : [];
+      var timelineData = [];
+      var momentsData = [];
+      var secretsData = [];
+      var dir = false;
+      var step = "";
+
+      checkLogin();
+
+      function checkLogin(){
+        if((authObject && authObject.user) && (userObject && userObject.length > 0)){
+          $("#title").html('Hi '+authObject.user.userName);
+          $("#userContainer span").html(authObject.user.userName);
+          $("#userContainer img").attr('src', authObject.user.photo);
+          $("#userbar").show();
+          $("#login").hide();
+          $("#folders").show();
+        }
+      }
+
+
+      function loginToCouple(){
+        auth.auth($("#username").val(), $("#password").val(), function(data){
+          console.log(data);
+
+          authObject = data;
+          userObject = [
+            {
+              id: authObject.user.userID,
+              name: authObject.user.userName
+            },
+            {
+              id: authObject.user.other.userID,
+              name: authObject.user.other.userName
+            }
+          ];
+          localStorage.authObject = JSON.stringify(data);
+          localStorage.userObject = JSON.stringify(userObject);
+          checkLogin();
+
+        });
+      }
+
+      $('input[type=file]').change(function () {
+          dir = this.files[0].path;
+          //localStorage.dir = dir;
+      });
+
+      function createDirectories(){
+        if(!dir){
+          alert('You have to select a location');
+        }else{
+          helper.createDirectories(dir, userObject);
+          fetchTimeline();
+        }
+      }
+
+      function fetchTimeline(){
+        $("#folders").hide();
+        $("#downloading").show();
+        $("#downloadingText").html('Fetching your timeline...');
+        $("#downloadingTextSmall").html('(this may take up to a minute)');
+        let timelineUrl = authObject.base+'/timeline?authenticationToken='+authObject.authenticationToken;
+
+        timeline.fetch(timelineUrl, userObject, dir, function(data){
+          $("#loadingIndicator").hide();
+          $("#downloadingText").html('<b>Success!</b> Got your timeline. It\'s now been saved as Timeline.json in the "Couple" directory we created earlier.<br /><br /> Next, lets get your moments...');
+          $("#downloadingTextSmall").html('');
+          $("#downloadContinue").html('Fetch my moments');
+          $("#downloadContinue").show();
+          $(".buttons").show();
+          step = "timeline";
+          timelineData = data;
+          console.log(data);
+        });
+      }
+
+      function fetchMoments(){
+        momentsData = _.where(timelineData, {eventType: 'media'});
+        $("#downloadingText").html('Fetching all your moments...<br>Found '+momentsData.length+' items in your history');
+        $("#downloadProgress").attr('aria-valuemax', momentsData.length);
+        $("#downloadingTextSmall").html('(This may take maaany hours... don\'t let your computer go to sleep...)');
+        $("#downloadContinue").hide();
+        $("#progressBar").show();
+        $("#loadingIndicator").show();
+        $(".buttons").hide();
+        moments.fetch(momentsData, dir, function(data){
+            $("#downloadProgress").attr('aria-valuenow', data.count);
+            var progressWidth = (data.count / momentsData.length * 100)+'%';
+            $("#downloadProgress").css('width', progressWidth);
+            $("#downloadProgress").html(data.count);
+
+            if(data.finished){
+              $("#loadingIndicator").hide();
+              $("#downloadingText").html('<b>Success!</b> Got your all your moments. They are now safely stored on your computer. <br /><br/>If you want to, you can also fetch the "locked" moments you have sent.');
+              $("#downloadingTextSmall").html('');
+              $("#progressBar").hide();
+              $("#downloadContinue").html('Fetch my secrets');
+              $("#downloadContinue").show();
+              $(".buttons").show();
+              step = "moments";
+            }
+        });
+
+      }
+
+      function fetchSecrets(){
+        secretsData = _.filter(timelineData, function(item){ return item.secret === 1 && item.file; });
+        $("#downloadingText").html('Fetching all your secrets...<br>Found '+secretsData.length+' items in your history');
+        $("#downloadProgress").attr('aria-valuemax', secretsData.length);
+        $("#downloadingTextSmall").html('(This may take maaany hours... don\'t let your computer go to sleep...)');
+        $("#progressBar").show();
+        $("#loadingIndicator").show();
+        $(".buttons").hide();
+        secrets.fetch(secretsData, dir, function(data){
+            $("#downloadProgress").attr('aria-valuenow', data.count);
+            var progressWidth = (data.count / secretsData.length * 100)+'%';
+            $("#downloadProgress").css('width', progressWidth);
+            $("#downloadProgress").html(data.count);
+            if(data.finished){
+              $("#loadingIndicator").hide();
+              $("#downloadingText").html('<b>Success!</b> Got your all your secrets<br /><br/>You have now downloaded all your content from couple.');
+              $("#downloadingTextSmall").html('');
+              $("#progressBar").hide();
+              $("#finish").html("Finished");
+              $("#finish").show();
+              $(".buttons").show();
+            }
+        });
+
+      }
+
+      function finishDownloads(){
+        $("#downloading").hide();
+        $("#finishScreen").show();
+      }
+
+      function downloadContinue(){
+        switch(step){
+          case "timeline":
+            fetchMoments();
+            break;
+          case "moments":
+            fetchSecrets();
+            break;
+        }
+      }
+    </script>
+  </body>
+</html>
