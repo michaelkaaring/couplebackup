@@ -9,7 +9,7 @@ exports.auth = function(username, password, callback){
         secretKey: password
       }},
       function(error, httpResponse, body){
-        alert(error);
+        if(error){alert(error);}
         if(httpResponse && httpResponse.statusCode == 200){
           callback(JSON.parse(body));
         }

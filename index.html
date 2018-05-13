@@ -223,7 +223,7 @@
       }
 
       function fetchMoments(){
-        momentsData = _.where(timelineData, {eventType: 'media'});
+        momentsData = _.filter(timelineData, function(item){ return item.eventType === "media" && item.file; });
         $("#downloadingText").html('Fetching all your moments...<br>Found '+momentsData.length+' items in your history');
         $("#downloadProgress").attr('aria-valuemax', momentsData.length);
         $("#downloadingTextSmall").html('(This may take maaany hours... don\'t let your computer go to sleep...)');
