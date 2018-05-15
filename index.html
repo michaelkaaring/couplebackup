@@ -11,71 +11,6 @@
     <script type="text/javascript" src="js/popper.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script>if (window.module) module = window.module;</script>
-    <style>
-      #downloading, #folders, #progressBar, #finishScreen {
-        display: none;
-      }
-
-      .buttons {
-        clear: both;
-        margin: 40px 0;
-        display: none;
-      }
-      .lds-ring {
-        display: inline-block;
-        position: relative;
-        width: 64px;
-        height: 64px;
-
-        float:left;
-        margin-right: 20px;
-      }
-      .lds-ring div {
-        box-sizing: border-box;
-        display: block;
-        position: absolute;
-        width: 51px;
-        height: 51px;
-        margin: 6px;
-        border: 6px solid #fff;
-        border-radius: 50%;
-        animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-        border-color: #fff transparent transparent transparent;
-      }
-      .lds-ring div:nth-child(1) {
-        animation-delay: -0.45s;
-      }
-      .lds-ring div:nth-child(2) {
-        animation-delay: -0.3s;
-      }
-      .lds-ring div:nth-child(3) {
-        animation-delay: -0.15s;
-      }
-      @keyframes lds-ring {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      .downloading {
-        text-align: center;
-      }
-
-      #createdBy {
-        display: inline-block;
-        position: absolute;
-        bottom: 10px;
-        right: 10px;
-        font-size: 12px;
-      }
-
-      #createdBy p {
-        margin:0px;
-      }
-    </style>
 </head>
 <body>
     <div class="container-fluid" id="userbar">
@@ -146,7 +81,6 @@
     <script type="text/javascript">
       var authObject = (localStorage.authObject) ? JSON.parse(localStorage.authObject) : {};
       var userObject = (localStorage.userObject) ? JSON.parse(localStorage.userObject) : [];
-      var timelineData = [];
       var momentsData = [];
       var secretsData = [];
       var dir = false;
@@ -217,13 +151,12 @@
           $("#downloadContinue").show();
           $(".buttons").show();
           step = "timeline";
-          timelineData = data;
-          console.log(data);
+          momentsData = data.moments;
+          secretsData = data.secrets;
         });
       }
 
       function fetchMoments(){
-        momentsData = _.filter(timelineData, function(item){ return item.eventType === "media" && item.file; });
         $("#downloadingText").html('Fetching all your moments...<br>Found '+momentsData.length+' items in your history');
         $("#downloadProgress").attr('aria-valuemax', momentsData.length);
         $("#downloadingTextSmall").html('(This may take maaany hours... don\'t let your computer go to sleep...)');
@@ -252,7 +185,6 @@
       }
 
       function fetchSecrets(){
-        secretsData = _.filter(timelineData, function(item){ return item.secret === 1 && item.file; });
         $("#downloadingText").html('Fetching all your secrets...<br>Found '+secretsData.length+' items in your history');
         $("#downloadProgress").attr('aria-valuemax', secretsData.length);
         $("#downloadingTextSmall").html('(This may take maaany hours... don\'t let your computer go to sleep...)');
@@ -269,6 +201,7 @@
               $("#downloadingText").html('<b>Success!</b> Got your all your secrets<br /><br/>You have now downloaded all your content from couple.');
               $("#downloadingTextSmall").html('');
               $("#progressBar").hide();
+              $("#downloadContinue").hide();
               $("#finish").html("Finished");
               $("#finish").show();
               $(".buttons").show();
