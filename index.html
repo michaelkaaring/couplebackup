@@ -15,7 +15,7 @@
 <body>
     <div class="container-fluid" id="userbar">
         <div id="userContainer">
-          <img src="" /> <span>Name</span>
+          <img src="" /> <span id="name">Name</span> <span id="logout" onclick="logout();">(Logout)</span>
         </div>
         <div class="clr"></div>
     </div>
@@ -91,12 +91,31 @@
       function checkLogin(){
         if((authObject && authObject.user) && (userObject && userObject.length > 0)){
           $("#title").html('Hi '+authObject.user.userName);
-          $("#userContainer span").html(authObject.user.userName);
+          $("#userContainer #name").html(authObject.user.userName);
           $("#userContainer img").attr('src', authObject.user.photo);
           $("#userbar").show();
           $("#login").hide();
           $("#folders").show();
         }
+      }
+
+      function logout(){
+         authObject = undefined;
+         userObject = undefined;
+         momentsData = [];
+         secretsData = [];
+         dir = false;
+         step = "";
+         localStorage.authObject = undefined;
+         localStorage.userObject = undefined;
+         $("#title").html('Couple.me backup');
+         $("#userbar").hide();
+         $("#login").show();
+         $("#folders").hide();
+         $("#downloading").hide();
+         $("#finishScreen").hide();
+         $("#username").val("");
+         $("#password").val("");
       }
 
 

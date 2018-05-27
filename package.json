@@ -1,7 +1,7 @@
 {
   "name": "Coupleappbackup",
   "productName": "Couple backuptool",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple application to take backup of your data from the couple app",
   "main": "main.js",
   "scripts": {
