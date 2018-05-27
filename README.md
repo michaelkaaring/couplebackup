@@ -6,8 +6,8 @@ The tool will fetch a JSON file of all your messages. Give you options to downlo
 
 ## Download
 
-macOS: https://github.com/michaelkaaring/couplebackup/releases/download/v1.0.0/Couple.backuptool-1.0.0.dmg
-Windows: https://github.com/michaelkaaring/couplebackup/releases/download/v1.0.0-win/Couple.backuptool.Setup.1.0.0.exe
+macOS: https://github.com/michaelkaaring/couplebackup/releases/download/v1.0.1/Couple.backuptool-1.0.1.dmg
+Windows: https://github.com/michaelkaaring/couplebackup/releases/download/v1.0.1-win/Couple.backuptool.Setup.1.0.1.exe
 
 ## How to use
 
